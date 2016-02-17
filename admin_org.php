@@ -1,4 +1,86 @@
 <!DOCTYPE html>
+<?php
+
+//应用会话内存储的变量值之前必须先开启会话
+session_start();
+//若是会话没有被设置，查看是否设置了cookie
+include 'function.php';
+include 'component.php';
+init_dash_web();
+$cnt=0;
+$all_orgs = array();
+$dbc = db_connect();
+$query = "SELECT belong_org FROM Member WHERE stuID=\"".$_SESSION["user_id"]."\"";
+        $result=mysqli_query($dbc,$query);
+        if ($result) {
+            if($result->num_rows>0){                                               //判断结果集中行的数目是否大于0
+                while($row =$result->fetch_array() ){
+                    $all_orgs[$cnt]=$row[0];
+                    $cnt++;
+                }
+            }
+        }else {
+            echo "query failed";
+        }
+
+if(isset($_POST["submit"])){
+    if (!empty($_FILES["org_photo"]["tmp_name"])) {
+        if ((($_FILES["org_photo"]["type"] == "image/jpeg") 
+        || ($_FILES["org_photo"]["type"] == "image/pjpeg")) 
+        && ($_FILES["org_photo"]["size"] < 5000000)) 
+        { 
+        if ($_FILES["org_photo"]["error"] > 0) 
+        { 
+            echo "Return Code: " . $_FILES["org_photo"]["error"] . "<br />"; 
+        } 
+        else 
+            { 
+            echo "Upload: " . $_FILES["org_photo"]["name"] . "<br />"; 
+            echo "Type: " . $_FILES["org_photo"]["type"] . "<br />"; 
+            echo "Size: " . ($_FILES["org_photo"]["size"] / 1024) . " Kb<br />"; 
+            echo "Temp file: " . $_FILES["org_photo"]["tmp_name"] . "<br />"; 
+            if (file_exists("upload/" . $_SESSION["user_id"].$_POST["org_name"])) 
+                { 
+                unlink("upload/" . $_SESSION["user_id"].$_POST["org_name"].".jpg"); 
+                } 
+            else 
+                {
+                    $im=imagecreatefromjpeg($_FILES["org_photo"]["tmp_name"]);//参数是图片的存方路径
+                    $maxwidth="600";//设置图片的最大宽度
+                    $maxheight="400";//设置图片的最大高度
+                    $name="upload/" .$_POST["org_name"];//图片的名称，随便取吧
+                    $filetype=".jpg";//图片类型
+                    resizeImage($im,$maxwidth,$maxheight,$name,$filetype);//调用上面的函数
+                //move_uploaded_file($_FILES["org_photo"]["tmp_name"], 
+                //"upload/" . $_SESSION["user_id"].$_POST["org_name"].".jpg"); 
+                echo "Stored in: " . "upload/" . $_POST["org_name"].".jpg"; 
+                } 
+            } 
+        } 
+        else 
+        { 
+            echo "Invalid file"; 
+        }
+        $photo_addr = "upload/" . $_POST["org_name"].".jpg";
+        $query = "UPDATE Organization SET Photo_link=\"". $photo_addr
+        ."\" WHERE boss_stuID=\"".$_SESSION["user_id"]."\" AND org_name=\"".$_POST["org_name"]."\"";
+        $data = mysqli_query($dbc,$query);
+    }else{
+        $photo_addr = "";
+    }
+
+    // update member table
+    if (!empty($_POST["org_update"])) {
+        $query = "UPDATE Organization SET Description=\"".mysqli_real_escape_string($dbc, $_POST["org_des"])
+        ."\", Tag=\"".mysqli_real_escape_string($dbc, $_POST["org_tag"])
+        ."\" WHERE boss_stuID=\"".$_SESSION["user_id"]."\" AND org_name=\"".mysqli_real_escape_string($dbc, $_POST["org_name"])."\"";
+        $data = mysqli_query($dbc,$query);
+        echo $query;
+        echo mysqli_error($dbc);
+    }
+}
+
+?>
 <html class="no-js">
     
     <head>
@@ -27,7 +109,7 @@
                     <div class="nav-collapse collapse">
                         <ul class="nav pull-right">
                             <li class="dropdown">
-                                <a href="#" role="button" class="dropdown-toggle" data-toggle="dropdown"> <i class="icon-user"></i> Vincent Gabriel <i class="caret"></i>
+                                <a href="#" role="button" class="dropdown-toggle" data-toggle="dropdown"> <i class="icon-user"></i> <?php echo $_SESSION["username"]?> <i class="caret"></i>
 
                                 </a>
                                 <ul class="dropdown-menu">
@@ -36,7 +118,7 @@
                                     </li>
                                     <li class="divider"></li>
                                     <li>
-                                        <a tabindex="-1" href="login.html">Logout</a>
+                                        <a tabindex="-1" href="logout.php">Logout</a>
                                     </li>
                                 </ul>
                             </li>
@@ -128,58 +210,7 @@
         </div>
         <div class="container-fluid">
             <div class="row-fluid">
-                <div class="span3" id="sidebar">
-                    <ul class="nav nav-list bs-docs-sidenav nav-collapse collapse">
-                        <li class="active">
-                            <a href="index.html"><i class="icon-chevron-right"></i> Dashboard</a>
-                        </li>
-                        <li>
-                            <a href="calendar.html"><i class="icon-chevron-right"></i> Calendar</a>
-                        </li>
-                        <li>
-                            <a href="stats.html"><i class="icon-chevron-right"></i> Statistics (Charts)</a>
-                        </li>
-                        <li>
-                            <a href="form.html"><i class="icon-chevron-right"></i> Forms</a>
-                        </li>
-                        <li>
-                            <a href="tables.html"><i class="icon-chevron-right"></i> Tables</a>
-                        </li>
-                        <li>
-                            <a href="buttons.html"><i class="icon-chevron-right"></i> Buttons & Icons</a>
-                        </li>
-                        <li>
-                            <a href="editors.html"><i class="icon-chevron-right"></i> WYSIWYG Editors</a>
-                        </li>
-                        <li>
-                            <a href="interface.html"><i class="icon-chevron-right"></i> UI & Interface</a>
-                        </li>
-                        <li>
-                            <a href="#"><span class="badge badge-success pull-right">731</span> Orders</a>
-                        </li>
-                        <li>
-                            <a href="#"><span class="badge badge-success pull-right">812</span> Invoices</a>
-                        </li>
-                        <li>
-                            <a href="#"><span class="badge badge-info pull-right">27</span> Clients</a>
-                        </li>
-                        <li>
-                            <a href="#"><span class="badge badge-info pull-right">1,234</span> Users</a>
-                        </li>
-                        <li>
-                            <a href="#"><span class="badge badge-info pull-right">2,221</span> Messages</a>
-                        </li>
-                        <li>
-                            <a href="#"><span class="badge badge-info pull-right">11</span> Reports</a>
-                        </li>
-                        <li>
-                            <a href="#"><span class="badge badge-important pull-right">83</span> Errors</a>
-                        </li>
-                        <li>
-                            <a href="#"><span class="badge badge-warning pull-right">4,231</span> Logs</a>
-                        </li>
-                    </ul>
-                </div>
+                <?php gen_sidebar_admin(1);?>
                 
                 <!--/span-->
                 <div class="span9" id="content">
@@ -204,6 +235,78 @@
                             	</div>
                         	</div>
                     	</div>
+                    <div class="row-fluid">
+                        <div class="block">
+                            <div class="navbar navbar-inner block-header">
+                                <div class="muted pull-left">Profile</div>
+                            </div>
+                            <div class="block-content collapse in">
+                                <div class="span12">
+                                    <?php
+                                    $query = "SELECT * FROM Organization WHERE org_name IN (SELECT org_name FROM Admin_users WHERE boss_stuID='".$_SESSION["user_id"]."' COLLATE utf8_bin)";
+                                    $result = mysqli_query($dbc,$query);
+                                    echo mysqli_error($dbc);
+                                        if ($result) {
+                                            while($row_org =$result->fetch_array())
+                                            {
+                                            ?>
+                                            </hr>
+                                            <form method="POST" class="form-horizontal" enctype="multipart/form-data" action="<?php echo $_SERVER["PHP_SELF"];?>">
+                                              <fieldset>
+                                                <legend><?php echo $row_org['org_name']; ?></legend>
+
+                                                    <input type="hidden" name="org_name" value="<?php echo $row_org['org_name'] ?>">
+       
+                                                <div class="control-group">
+                                                  <label class="control-label" for="typeahead">Tag </label>
+                                                  <div class="controls">
+                                                    <input type="text" class="span6" id="typeahead" name="org_tag" value="<?php echo $row_org['tag'] ?>">
+                                                  </div>
+                                                </div>
+                                                <div class="control-group">
+                                                  <label class="control-label" for="fileInput">Photo</label>
+                                                  <div class="controls">
+                                                    <img src="<?php echo $row_org['photo_link'] ?>"><hr>
+                                                    <input class="input-file uniform_on" id="fileInput" type="file" name="org_photo">
+                                                  </div>
+                                                </div>
+                                                <div class="control-group">
+                                                  <label class="control-label" for="textarea2">Description</label>
+                                                  <div class="controls">
+                                                    <textarea id="ckeditor_standard" style="width: 810px; height: 600px" name="org_des" ><?php echo $row_org['description'] ?></textarea>
+                                                  </div>    
+                                                </div>
+                                                <div class="form-actions">
+                                                  <input type="hidden" name="org_update" value="set">
+                                                  <button type="submit" class="btn btn-primary" name="submit">Save changes</button>
+                                                  <button type="reset" class="btn">Cancel</button>
+                                                </div>
+                                              </fieldset>
+                                            </form>
+                                        <?php
+                                        }
+                                    } ?>
+                                </div>
+                            </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        </div>
+                    </div>
                     <div class="row-fluid">
                         <!-- block -->
                         <div class="block">
@@ -518,6 +621,107 @@
             $('.chart').easyPieChart({animate: 1000});
         });
         </script>
+        <link href="vendors/datepicker.css" rel="stylesheet" media="screen">
+        <link href="vendors/uniform.default.css" rel="stylesheet" media="screen">
+        <link href="vendors/chosen.min.css" rel="stylesheet" media="screen">
+
+        <link href="vendors/wysiwyg/bootstrap-wysihtml5.css" rel="stylesheet" media="screen">
+        <script src="vendors/jquery.uniform.min.js"></script>
+        <script src="vendors/chosen.jquery.min.js"></script>
+        <script src="vendors/bootstrap-datepicker.js"></script>
+
+        <script src="vendors/wysiwyg/wysihtml5-0.3.0.js"></script>
+        <script src="vendors/wysiwyg/bootstrap-wysihtml5.js"></script>
+
+        <script src="vendors/wizard/jquery.bootstrap.wizard.min.js"></script>
+        <script src="vendors/bootstrap-wysihtml5/lib/js/wysihtml5-0.3.0.js"></script>
+        <script src="vendors/bootstrap-wysihtml5/src/bootstrap-wysihtml5.js"></script>
+        <script src="vendors/ckeditor/ckeditor.js"></script>
+        <script src="vendors/ckeditor/adapters/jquery.js"></script>
+        <script type="text/javascript" src="vendors/tinymce/js/tinymce/tinymce.min.js"></script>
+        <script src="assets/scripts.js"></script>
+        <script type="text/javascript" src="vendors/jquery-validation/dist/jquery.validate.min.js"></script>
+        <script src="assets/form-validation.js"></script>
+
+        <script>
+
+    jQuery(document).ready(function() {   
+       FormValidation.init();
+    });
+    
+
+        $(function() {
+            $(".datepicker").datepicker();
+            $(".uniform_on").uniform();
+            $(".chzn-select").chosen();
+            $('.textarea').wysihtml5();
+
+            $('#rootwizard').bootstrapWizard({onTabShow: function(tab, navigation, index) {
+                var $total = navigation.find('li').length;
+                var $current = index+1;
+                var $percent = ($current/$total) * 100;
+                $('#rootwizard').find('.bar').css({width:$percent+'%'});
+                // If it's the last tab then hide the last button and show the finish instead
+                if($current >= $total) {
+                    $('#rootwizard').find('.pager .next').hide();
+                    $('#rootwizard').find('.pager .finish').show();
+                    $('#rootwizard').find('.pager .finish').removeClass('disabled');
+                } else {
+                    $('#rootwizard').find('.pager .next').show();
+                    $('#rootwizard').find('.pager .finish').hide();
+                }
+            }});
+            $('#rootwizard .finish').click(function() {
+                alert('Finished!, Starting over!');
+                $('#rootwizard').find("a[href*='tab1']").trigger('click');
+            });
+        });
+        </script>
+        <script>
+        $(function() {
+            // Bootstrap
+            $('#bootstrap-editor').wysihtml5();
+
+            // Ckeditor standard
+            $( 'textarea#ckeditor_standard' ).ckeditor({width:'98%', height: '150px', toolbar: [
+                { name: 'document', items: [ 'Source', '-', 'NewPage', 'Preview', '-', 'Templates' ] }, // Defines toolbar group with name (used to create voice label) and items in 3 subgroups.
+                [ 'Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo' ],          // Defines toolbar group without name.
+                { name: 'basicstyles', items: [ 'Bold', 'Italic' ] }
+            ]});
+            $( 'textarea#ckeditor_full' ).ckeditor({width:'98%', height: '150px'});
+        });
+
+        // Tiny MCE
+        tinymce.init({
+            selector: "#tinymce_basic",
+            plugins: [
+                "advlist autolink lists link image charmap print preview anchor",
+                "searchreplace visualblocks code fullscreen",
+                "insertdatetime media table contextmenu paste"
+            ],
+            toolbar: "insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image"
+        });
+
+        // Tiny MCE
+        tinymce.init({
+            selector: "#tinymce_full",
+            plugins: [
+                "advlist autolink lists link image charmap print preview hr anchor pagebreak",
+                "searchreplace wordcount visualblocks visualchars code fullscreen",
+                "insertdatetime media nonbreaking save table contextmenu directionality",
+                "emoticons template paste textcolor"
+            ],
+            toolbar1: "insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image",
+            toolbar2: "print preview media | forecolor backcolor emoticons",
+            image_advtab: true,
+            templates: [
+                {title: 'Test template 1', content: 'Test 1'},
+                {title: 'Test template 2', content: 'Test 2'}
+            ]
+        });
+
+        </script>
+    <?php mysqli_close($dbc);?>
     </body>
 
 </html>
