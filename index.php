@@ -2,8 +2,8 @@
 <?php 
 	include 'component.php';
 	include 'function.php';
-	init_web();
 	$dbc = db_connect();
+	init_web($dbc);
 ?>
 <html lang="en">
   <head>
@@ -61,9 +61,7 @@
         ?>
             
 	    <hr>
-      <footer>
-        <p>&copy; Company 2014</p>
-      </footer>
+      <?php gen_footer(); ?>
 
     </div><!--/.container-->
     <script src="vendors/jquery-1.9.1.min.js"></script>

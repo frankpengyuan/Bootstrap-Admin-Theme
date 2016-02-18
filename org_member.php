@@ -5,8 +5,8 @@ session_start();
 //若是会话没有被设置，查看是否设置了cookie
 include 'function.php';
 include 'component.php';
-init_web();
 $dbc = db_connect();
+init_web($dbc);
 if (isset($_GET['org'])) {
   $org_name = $_GET['org'];
 } else {
@@ -161,9 +161,7 @@ if (isset($_GET['org'])) {
 
       <hr>
 
-      <footer>
-        <p>&copy; Company 2014</p>
-      </footer>
+      <?php gen_footer(); ?>
 
     </div><!--/.container-->
 

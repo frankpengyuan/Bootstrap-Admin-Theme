@@ -9,14 +9,14 @@ $dbc = mysqli_connect("localhost", "root", "Incoming29", "acweb_db");
 $home_url = "index.php";
 if(!isset($_SESSION["user_id"])){
     if(isset($_POST["submit"])){//用户提交登录表单时履行如下代码
-      if ($_POST["check"] != $_SESSION["check"]) {
+      if (strcasecmp($_POST["check"],$_SESSION["check"])!=0) {
         $error_msg = "wrong CAPTCHA!";
       } else {
-        $user_username = mysqli_real_escape_string($dbc,trim($_POST["username"]));
+        $user_ID = mysqli_real_escape_string($dbc,trim($_POST["userID"]));
         $user_password = mysqli_real_escape_string($dbc,trim($_POST["password"]));
-        if(!empty($user_username)&&!empty($user_password)){
+        if(!empty($user_ID)&&!empty($user_password)){
             //MySql中的SHA()函数用于对字符串进行单向加密
-            $query = "SELECT stuID, username FROM All_users WHERE username = \"".$user_username."\" COLLATE utf8_bin AND password = \"".$user_password."\" COLLATE utf8_bin";
+            $query = "SELECT stuID, username FROM All_users WHERE stuID = \"".$user_ID."\" COLLATE utf8_bin AND password = \"".$user_password."\" COLLATE utf8_bin";
             $data = mysqli_query($dbc,$query);
             //用用户名和暗码进行查询，若查到的记录正好为一条，则设置SESSION和COOKIE，同时进行页面重定向
             if(mysqli_num_rows($data)>=1){ // TODO::
@@ -27,10 +27,10 @@ if(!isset($_SESSION["user_id"])){
                 setcookie("username",$row["username"],time()+(60*60*24*30));
                 header("Location: ".$home_url);
             }else{//若查到的记录不合错误，则设置错误信息
-                $error_msg = "Sorry, you must enter a valid username and password to log in.";
+                $error_msg = "Sorry, you must enter a valid ID and password to log in.";
             }
         }else{
-            $error_msg = "Sorry, you must enter a valid username and password to log in.";
+            $error_msg = "Sorry, you must enter a valid ID and password to log in.";
         }
       }
       $error_msg="<div class=\"alert alert-error\">".$error_msg."</div>";
@@ -64,9 +64,9 @@ mysqli_close($dbc);
         if(!isset($_SESSION["user_id"])) {
           echo  $error_msg;
         ?>
-        <input type="text" id="username" name="username" class="input-block-level" placeholder="User name" value="<?php if(!empty($user_username)) echo $user_username; ?>" />
+        <input type="text" id="userID" name="userID" class="input-block-level" placeholder="User ID/Student ID" value="<?php if(!empty($user_ID)) echo $user_ID; ?>" />
         <input type="password" id="password" name="password" class="input-block-level" placeholder="Password">
-        <div class=""><input type="text" name="check" placeholder="Captcha"><img align="right" src="captcha.php"></img></div>
+        <div class=""><input type="text" name="check" placeholder="Captcha"><a href="login.php"><img align="right" src="captcha.php"></img></a></div>
         <button class="btn btn-large btn-primary" type="submit" name="submit">Sign in</button>
       
       </form>

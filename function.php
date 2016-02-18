@@ -1,22 +1,28 @@
 <?php
-	function init_web()
+	function init_web($dbc)
 	{
 		if(!isset($_SESSION["user_id"])){
-		    if(isset($_COOKIE["user_id"])&&isset($_COOKIE["username"])){
+		    if(isset($_COOKIE["user_id"])){
 		        //用cookie给session赋值
 		        $_SESSION["user_id"]=$_COOKIE["user_id"];
-		        $_SESSION["username"]=$_COOKIE["username"];
+		        $query = "SELECT username FROM All_users WHERE stuID=\"".mysqli_real_escape_string($dbc, $_SESSION["user_id"])."\" COLLATE utf8_bin ";
+            	$data = mysqli_query($dbc,$query);
+            	$result = $data->fetch_array();
+            	$_SESSION["username"]=$result[0];
 		    }
 		}
 	}
 
-	function init_dash_web()
+	function init_dash_web($dbc)
 	{
 		if(!isset($_SESSION["user_id"])){
-		    if(isset($_COOKIE["user_id"])&&isset($_COOKIE["username"])){
+		    if(isset($_COOKIE["user_id"])){
 		        //用cookie给session赋值
 		        $_SESSION["user_id"]=$_COOKIE["user_id"];
-		        $_SESSION["username"]=$_COOKIE["username"];
+		        $query = "SELECT username FROM All_users WHERE stuID=\"".mysqli_real_escape_string($dbc, $_SESSION["user_id"])."\" COLLATE utf8_bin ";
+            	$data = mysqli_query($dbc,$query);
+            	$result = $data->fetch_array();
+            	$_SESSION["username"]=$result[0];
 		    } else {
 		        $home_url = "login.php";
 		        header("Location:".$home_url);
