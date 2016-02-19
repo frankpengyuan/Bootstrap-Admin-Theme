@@ -17,6 +17,7 @@ if(isset($_POST["submit"])){
         if (check_admin($dbc)) {
             $query = "SELECT * FROM All_users WHERE stuID=\"".mysqli_real_escape_string($dbc, $_POST["usr_ID"])."\" COLLATE utf8_bin ";
             $data = mysqli_query($dbc,$query);
+            echo mysqli_error($dbc);
             if ($data) {
                 if ($data->num_rows > 0) {
                     $add_user_err_msg="User with ID:".mysqli_real_escape_string($dbc, $_POST["usr_ID"])." already exist";
@@ -413,7 +414,7 @@ function admin_echo($he_is_admin)
                                         <div class="control-group">
                                           <label class="control-label" for="date01">Birthday</label>
                                           <div class="controls">
-                                            <input type="text" class="input-xlarge datepicker" placeholder="MM/DD/YYYY" name="usr_dob">
+                                            <input type="text" class="input-xlarge datepicker" placeholder="MM dd, yyyy" name="usr_dob" value="January 01, 1995">
                                           </div>
                                         </div>
                                         <div class="form-actions">

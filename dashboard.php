@@ -44,8 +44,6 @@ if(isset($_POST["submit"])){
                 { 
                 unlink("upload/" . $_SESSION["user_id"].$_POST["mem_org"].".jpg"); 
                 } 
-            else 
-                {
                     $im=imagecreatefromjpeg($_FILES["mem_photo"]["tmp_name"]);//参数是图片的存方路径
                     $maxwidth="200";//设置图片的最大宽度
                     $maxheight="200";//设置图片的最大高度
@@ -55,7 +53,6 @@ if(isset($_POST["submit"])){
                 //move_uploaded_file($_FILES["mem_photo"]["tmp_name"], 
                 //"upload/" . $_SESSION["user_id"].$_POST["mem_org"].".jpg"); 
                 echo "Stored in: " . "upload/" . $_SESSION["user_id"].$_POST["mem_org"].".jpg"; 
-                } 
             } 
         } 
         else 
@@ -78,7 +75,7 @@ if(isset($_POST["submit"])){
         ."\" WHERE StuID=\"".$_SESSION["user_id"]."\"";
         $data = mysqli_query($dbc,$query);
         $_SESSION["username"] = mysqli_real_escape_string($dbc, $_POST["mem_name"]);
-        echo $query;
+        //echo $query;
         echo mysqli_error($dbc);
     }
 

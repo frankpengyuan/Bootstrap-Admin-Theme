@@ -18,34 +18,11 @@ if (isset($_GET['org'])) {
 ?>
 <html lang="en">
   <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="">
-    <meta name="author" content="">
-    <link rel="shortcut icon" href="./assets/ico/favicon.ico">
-
-    <title>UM-SJTU JI Student Affairs</title>
-
-    <!-- Bootstrap core CSS -->
-    <link href="./css/bootstrap.min.css" rel="stylesheet">
-
-
-    <!-- Custom styles for this template -->
-    <link href="./css/offcanvas.css" rel="stylesheet">
-
-    <!-- Just for debugging purposes. Don't actually copy this line! -->
-    <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
-
-    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
-    <!--[if lt IE 9]>
-      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
-    <![endif]-->
+    <?php gen_header(); ?>
   </head>
 
   <body>
-    <?php gen_navbar();?>
+    <?php gen_navbar($org_name);?>
 
     <div class="container">
 
@@ -105,7 +82,7 @@ if (isset($_GET['org'])) {
 
                           <div class="col-xs-12 col-sm-6 col-md-8">
                             <hr>
-                              <p><strong><a href="org_member.php?org=<?php echo $org_name?>&memberID=<?php echo $mem_info['stuID']?>"><?php echo $person_info['username'];?>  &raquo;</a></strong></p>
+                              <h2><strong><a href="org_member.php?org=<?php echo $org_name?>&memberID=<?php echo $mem_info['stuID']?>"><?php echo $person_info['username'];?></a></strong></h2>
                               <p><strong>Email: </strong><a href="mailto:<?php echo $person_info['email'];?>"><?php echo $person_info['email'];?></a></p>
                               <p><strong>Phone: </strong><?php echo $person_info['phone'];?></p>
                               <p><?php echo $mem_info['tag']?></p>
@@ -139,7 +116,7 @@ if (isset($_GET['org'])) {
 
               <div class="col-xs-12 col-sm-6 col-md-8">
                 <hr>
-                  <p><strong><?php echo $person_info['username'];?></strong></p>
+                  <h2><strong><?php echo $person_info['username'];?></strong></h2>
                   <p><strong>Email: </strong><a href="mailto:<?php echo $person_info['email'];?>"><?php echo $person_info['email'];?></a></p>
                   <p><strong>Phone: </strong><?php echo $person_info['phone'];?></p>
                   <p><?php echo $member_info['tag']?></p>

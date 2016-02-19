@@ -40,7 +40,7 @@
     <?php
 	}
 
-	function gen_navbar($page=-1)
+	function gen_navbar($page="")
 	{
 	?>
 	<div class="navbar navbar-fixed-top navbar-default" role="navigation">
@@ -56,32 +56,32 @@
         </div>
         <div class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
-            <li class="dropdown <?php if($page==1) echo "active"?>">
+            <li class="dropdown <?php if($page=="Advising Center") echo "active"?>">
               <a href="./org_description.php?org=Advising Center" role="button" class="dropdown-toggle">Advising Center<i class="caret"></i>
               </a>
               <?php gen_navbar_dropdown("Advising Center");?>
           	</li>
-          	<li class="dropdown <?php if($page==3) echo "active"?>">
+          	<li class="dropdown <?php if($page=="Writing Center") echo "active"?>">
               <a href="./org_description.php?org=Writing Center" role="button" class="dropdown-toggle">Writing Center <i class="caret"></i>
               </a>
               <?php gen_navbar_dropdown("Writing Center");?>
           	</li>
-            <li class="dropdown <?php if($page==2) echo "active"?>">
+            <li class="dropdown <?php if($page=="Honor Council") echo "active"?>">
               <a href="./org_description.php?org=Honor Council" role="button" class="dropdown-toggle">Honor Council<i class="caret"></i>
               </a>
               <?php gen_navbar_dropdown("Honor Council");?>
           	</li>
-            <li class="dropdown <?php if($page==3) echo "active"?>">
+            <li class="dropdown <?php if($page=="Student Union") echo "active"?>">
               <a href="./org_description.php?org=Student Union" role="button" class="dropdown-toggle">Student Union<i class="caret"></i>
               </a>
               <?php gen_navbar_dropdown("Student Union");?>
           	</li>
-          	<li class="dropdown <?php if($page==3) echo "active"?>">
+          	<li class="dropdown <?php if($page=="AST") echo "active"?>">
               <a href="./org_description.php?org=AST" role="button" class="dropdown-toggle">AST <i class="caret"></i>
               </a>
               <?php gen_navbar_dropdown("AST");?>
           	</li>
-          	<li class="dropdown <?php if($page==3) echo "active"?>">
+          	<li class="dropdown <?php if($page=="Staff") echo "active"?>">
               <a href="./org_description.php?org=Staff" role="button" class="dropdown-toggle">Staff <i class="caret"></i>
               </a>
               <?php gen_navbar_dropdown("Staff");?>
@@ -213,14 +213,14 @@
             $('.chart').easyPieChart({animate: 1000});
         });
         </script>
-        <link href="vendors/datepicker.css" rel="stylesheet" media="screen">
+        <!--link href="vendors/datepicker.css" rel="stylesheet" media="screen"-->
         <link href="vendors/uniform.default.css" rel="stylesheet" media="screen">
         <link href="vendors/chosen.min.css" rel="stylesheet" media="screen">
 
         <link href="vendors/wysiwyg/bootstrap-wysihtml5.css" rel="stylesheet" media="screen">
         <script src="vendors/jquery.uniform.min.js"></script>
         <script src="vendors/chosen.jquery.min.js"></script>
-        <script src="vendors/bootstrap-datepicker.js"></script>
+        <!--script src="vendors/bootstrap-datepicker.js"></script-->
 
         <script src="vendors/wysiwyg/wysihtml5-0.3.0.js"></script>
         <script src="vendors/wysiwyg/bootstrap-wysihtml5.js"></script>
@@ -234,15 +234,36 @@
         <script src="assets/scripts.js"></script>
         <script type="text/javascript" src="vendors/jquery-validation/dist/jquery.validate.min.js"></script>
         <script src="assets/form-validation.js"></script>
+        <link type="text/css" href="http://code.jquery.com/ui/1.9.1/themes/smoothness/jquery-ui.css" rel="stylesheet" />
+        <script type="text/javascript" src="http://code.jquery.com/ui/1.9.1/jquery-ui.min.js"></script>
+        <link href="css/jquery-ui-timepicker-addon.css" type="text/css" />
+        <script src="js/jquery-ui-timepicker-addon.js" type="text/javascript"></script>
+        <script type="text/javascript">
+        jQuery(function () {
+            jQuery('.datetimepicker').datetimepicker({
+                timeFormat: "HH:mm:00",
+                dateFormat: "yy-mm-dd",
+                changeMonth: true,
+                changeYear: true,
+                stepMinute: 10
+            });
+
+        });
+    </script>
+
         <script>
 
-    jQuery(document).ready(function() {   
-       FormValidation.init();
-    });
+        jQuery(document).ready(function() {   
+           FormValidation.init();
+        });
     
 
         $(function() {
-            $(".datepicker").datepicker();
+            $(".datepicker").datepicker({
+                dateFormat: "yy-mm-dd",
+                changeMonth: true,
+                changeYear: true
+            });
             $(".uniform_on").uniform();
             $(".chzn-select").chosen();
             $('.textarea').wysihtml5();
@@ -293,6 +314,34 @@
 	<?php
 	}
 
+
+    function gen_header($title='UM-SJTU JI Student Affairs')
+    { ?>
+        <meta charset="utf-8">
+
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="">
+        <meta name="author" content="">
+        <link rel="shortcut icon" href="./assets/ico/favicon.ico">
+
+        <title><?php echo $title ?></title>
+
+        <!-- Bootstrap core CSS -->
+        <link href="./css/bootstrap.min.css" rel="stylesheet">
+
+        <!-- Custom styles for this template -->
+        <link href="./css/offcanvas.css" rel="stylesheet">
+
+        <!-- Just for debugging purposes. Don't actually copy this line! -->
+        <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
+
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+          <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+          <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+    <?php }
 
 	function gen_header_admin($title='UM-SJTU JI Student Affairs - Admin')
 	{

@@ -22,6 +22,7 @@ if(isset($_POST["submit"])){
     $event_err_msg = "";
     if (!empty($_POST["change_type"])) {
         function tmp() {if(($_POST["event_budget"]!="")){return ($_POST["event_budget"]);}else{return "0";}}
+        $my_event_id=-1;
         if ($_POST["change_type"] == "add") {
             if (check_field_post()) {
                 if (check_permission_org($dbc, $_POST['org_name'])) {
@@ -34,7 +35,7 @@ if(isset($_POST["submit"])){
                     echo mysqli_error($dbc);
                     if ($data) {
                         if ($data->num_rows > 0) {
-                            $add_user_err_msg="This event already exists.";
+                            $event_err_msg="This event already exists.";
                         } else {
                             $query = "INSERT INTO Events SET time=\"". mysqli_real_escape_string($dbc, $_POST["event_time"])
                             ."\", location=\"". mysqli_real_escape_string($dbc, $_POST["event_location"])
@@ -51,19 +52,53 @@ if(isset($_POST["submit"])){
                             ."\"";
                             $data = mysqli_query($dbc,$query);
                             //echo $query;
-                            //echo tmp();
                             echo mysqli_error($dbc);
+
+                            $query = "SELECT event_id FROM Events WHERE title='".mysqli_real_escape_string($dbc, $_POST["event_title"])
+                            ."' COLLATE utf8_bin AND org_name='".mysqli_real_escape_string($dbc, $_POST["org_name"])
+                            ."' COLLATE utf8_bin AND location='".mysqli_real_escape_string($dbc, $_POST["event_location"])
+                            ."' COLLATE utf8_bin AND time='".mysqli_real_escape_string($dbc, $_POST["event_time"])
+                            ."' COLLATE utf8_bin";
+                            $data = mysqli_query($dbc,$query);
+                            echo mysqli_error($dbc);
+                            if ($data) {
+                                if ($data -> num_rows >0) {
+                                    $tmp = $data -> fetch_array();
+                                    $my_event_id = $tmp[0];
+                                }
+                            }
+                            $budget_file_link = get_pdf_addr("budget_file", "budget_event_", $my_event_id);
+                            $photo_link = get_photo_addr("event_photo", "event_", $my_event_id);
+                            if ($photo_link["new_file"]) {
+                                $query = "UPDATE Events SET photo_link=\"". mysqli_real_escape_string($dbc, $photo_link["content"])
+                                ."\" WHERE event_id='".mysqli_real_escape_string($dbc, $my_event_id)."'";
+                                $data = mysqli_query($dbc,$query);
+                                //echo $query;
+                                echo mysqli_error($dbc);
+                            }
+                            if ($budget_file_link["new_file"]) {
+                                $query = "UPDATE Events SET budget_file_link=\"". mysqli_real_escape_string($dbc, $budget_file_link["content"])
+                                ."\" WHERE event_id='".mysqli_real_escape_string($dbc, $my_event_id)."'";
+                                $data = mysqli_query($dbc,$query);
+                                //echo $query;
+                                echo mysqli_error($dbc);
+                            }
+                            $event_err_msg .= $budget_file_link["error"];
+                            $event_err_msg .= $photo_link["error"];
                         }
                     }
                 } else {
-                    $add_user_err_msg = "You do not have such permission.";
+                    $event_err_msg = "You do not have such permission.";
                 }
             } else {
-                $modify_event_err_msg = "Parameter insufficient.";
+                $event_err_msg = "Parameter insufficient.";
             } 
         } else if ($_POST["change_type"] == "modify") {
             if (isset($_POST['event_id'])) {
                 if (check_permission_id($dbc, $_POST['event_id'])) {
+                    $my_event_id = $_POST['event_id'];
+                    $budget_file_link = get_pdf_addr("budget_file", "budget_event_", $my_event_id);
+                    $photo_link = get_photo_addr("event_photo", "event_", $_POST['event_id']);
                     $query = "UPDATE Events SET time=\"". mysqli_real_escape_string($dbc, $_POST["event_time"])
                     ."\", location=\"". mysqli_real_escape_string($dbc, $_POST["event_location"])
                     ."\", org_name=\"". mysqli_real_escape_string($dbc, $_POST["org_name"])
@@ -80,48 +115,33 @@ if(isset($_POST["submit"])){
                     $data = mysqli_query($dbc,$query);
                     //echo $query;
                     echo mysqli_error($dbc);
+                    if ($photo_link["new_file"]) {
+                        $query = "UPDATE Events SET photo_link=\"". mysqli_real_escape_string($dbc, $photo_link["content"])
+                        ."\" WHERE event_id='".mysqli_real_escape_string($dbc, $_POST["event_id"])."'";
+                        $data = mysqli_query($dbc,$query);
+                        //echo $query;
+                        echo mysqli_error($dbc);
+                    }
+                    if ($budget_file_link["new_file"]) {
+                        $query = "UPDATE Events SET budget_file_link=\"". mysqli_real_escape_string($dbc, $budget_file_link["content"])
+                        ."\" WHERE event_id='".mysqli_real_escape_string($dbc, $_POST["event_id"])."'";
+                        $data = mysqli_query($dbc,$query);
+                        //echo $query;
+                        echo mysqli_error($dbc);
+                    }
+                    $event_err_msg .= $budget_file_link["error"];
+                    $event_err_msg .= $photo_link["error"];
                 } else {
-                    $add_user_err_msg = "You do not have such permission.";
+                    $event_err_msg = "You do not have such permission.";
                 }
             } else {
-                $modify_event_err_msg = "Parameter insufficient.";
+                $event_err_msg = "Parameter insufficient.";
             } 
         }
-    }
-
-    // add member
-    $add_member_err_msg = "";
-    if (!empty($_POST["add_member_ID"])) {
-        if (check_permission($dbc, $_POST["add_to_org"])) {
-            $query = "SELECT * FROM Member WHERE stuID=\"".mysqli_real_escape_string($dbc, $_POST["add_member_ID"])
-            ."\" COLLATE utf8_bin AND belong_org=\"".mysqli_real_escape_string($dbc, $_POST["add_to_org"])."\" COLLATE utf8_bin ";
-            $data = mysqli_query($dbc,$query);
-            //echo $query;
-            echo mysqli_error($dbc);
-            if ($data) {
-                if ($data->num_rows > 0) {
-                    $add_member_err_msg = "Member already exist in ".mysqli_real_escape_string($dbc, $_POST["add_to_org"]);
-                } else {
-                    $query = "SELECT * FROM All_users WHERE stuID=\"".mysqli_real_escape_string($dbc, $_POST["add_member_ID"])."\" COLLATE utf8_bin ";
-                    $data = mysqli_query($dbc,$query);
-                    //echo $query;
-                    echo mysqli_error($dbc);
-                    if ($data) {
-                        if ($data->num_rows == 0) {
-                            $add_member_err_msg = "No such user, please add user first.";
-                        } else {
-                            $query = "INSERT INTO member SET stuID=\"".mysqli_real_escape_string($dbc, $_POST["add_member_ID"])
-                            ."\", belong_org=\"".mysqli_real_escape_string($dbc, $_POST["add_to_org"])."\"";
-                            $data = mysqli_query($dbc,$query);
-                            //echo $query;
-                            echo mysqli_error($dbc);
-                        }
-                    }
-                }
-            }
-        } else {
-            $add_member_err_msg = "You do not have such permission.";
+        if ($_POST['submit']!="my_return") {
+            header("Location: ".$_SERVER["PHP_SELF"]."?action=modify&event_id=".$my_event_id."&error=".$event_err_msg);
         }
+        echo "save and return";
     }
 }
 
@@ -182,6 +202,9 @@ if (isset($_GET['action'])) {
         }
     } else if ($my_action == "modify") {
         if (check_field() == true) {
+            if (isset($_GET["error"])) {
+                $modify_event_err_msg = $_GET["error"];
+            }
             if (check_permission_id($dbc, $_GET['event_id']) == true) {
                 $add_or_modify = 1;
                 $query = "SELECT * FROM Events WHERE event_id='".mysqli_real_escape_string($dbc, $_GET["event_id"])
@@ -228,6 +251,7 @@ if (isset($_GET['action'])) {
     
     <head>
         <?php gen_header_admin();?>
+        
     </head>
     
     <body>
@@ -239,17 +263,17 @@ if (isset($_GET['action'])) {
                 <!--/span-->
                 <div class="span9" id="content">
                 <?php // handle error msg
-                if (!empty($_POST["add_member_ID"]))
+                if (isset($_POST["submit"]))
                 {
-                    if ($add_user_err_msg != "") { ?>
+                    if ($event_err_msg != "") { ?>
                         <div class="alert alert-error">
                             <button class="close" data-dismiss="alert">&times;</button>
-                            <strong>Error! </strong><?php echo $add_user_err_msg;?>.
+                            <strong>Error! </strong><?php echo $event_err_msg;?>.
                         </div>
                     <?php } else {?>
                         <div class="alert alert-success">
                             <button class="close" data-dismiss="alert">&times;</button>
-                            <strong>Success! </strong>New user added.
+                            <strong>Success! </strong> Data saved.
                         </div>
                     <?php }
                 }?>
@@ -293,15 +317,15 @@ if (isset($_GET['action'])) {
                                         <div class="control-group">
                                           <label class="control-label" for="date01">Begin</label>
                                           <div class="controls">
-                                            <input type="text" class="input-xlarge datepicker" 
-                                            placeholder="MM/DD/YYYY" name="event_time" value="<?php echo $event_info_pre['time'] ?>">
+                                            <input type="text" class="input-xlarge datetimepicker"
+                                            placeholder="MM dd, yy HH:mm" name="event_time" value="<?php echo $event_info_pre['time'] ?>">
                                           </div>
                                         </div>
                                         <div class="control-group">
                                           <label class="control-label" for="date01">End</label>
                                           <div class="controls">
-                                            <input type="text" class="input-xlarge datepicker" 
-                                            placeholder="MM/DD/YYYY" name="event_end_time" value="<?php echo $event_info_pre['end_time'] ?>">
+                                            <input type="text" class="input-xlarge datetimepicker" 
+                                            placeholder="MM dd, yy HH:mm" name="event_end_time" value="<?php echo $event_info_pre['end_time'] ?>">
                                           </div>
                                         </div>
                                         <div class="control-group">
@@ -370,7 +394,11 @@ if (isset($_GET['action'])) {
                                           <label class="control-label" for="fileInput">Budget File</label>
                                           <div class="controls">
                                             <div style="padding-top: 5px">
-                                            <a href="<?php echo $event_info_pre['budget_file_link'] ?>">Your Budget File</a><hr>
+                                                <?php if ($event_info_pre['budget_file_link'] != ""): ?>
+                                                    <a href="<?php echo $event_info_pre['budget_file_link'] ?>">
+                                                        Budget File.pdf
+                                                    </a><hr>
+                                                <?php endif ?>
                                             </div>
                                             <input class="input-file uniform_on" id="fileInput" type="file" name="budget_file">
                                           </div>
@@ -379,11 +407,59 @@ if (isset($_GET['action'])) {
                                           <input type="hidden" name="org_name" value="<?php echo $event_info_pre["org_name"]?>">
                                           <input type="hidden" name="change_type" value="<?php if($event_info_pre['title']==""){echo "add";}else{echo "modify";} ?>">
                                           <input type="hidden" name="event_id" value="<?php echo $event_info_pre['event_id'] ?>">
-                                          <button type="submit" class="btn btn-primary" name="submit">Save and return</button>
+                                          <button type="submit" class="btn btn-primary" name="submit">Save</button>
+                                          <button type="submit" class="btn btn-primary" name="submit" value="my_return">Save and return</button>
                                           <a href="<?php echo $_SERVER["PHP_SELF"];?>"><button class="btn">Cancel</button></a>
                                         </div>
                                         </fieldset>
                                     </form>
+                                    <hr>
+                                    <legend>Registered people</legend>
+
+                                    <div class="table-toolbar">
+                                      <div class="btn-group pull-right">
+                                         <button data-toggle="dropdown" class="btn dropdown-toggle">Tools <span class="caret"></span></button>
+                                         <ul class="dropdown-menu">
+                                            <li><a href="#">Print</a></li>
+                                            <li><a href="#">Save as PDF</a></li>
+                                            <li><a href="#">Export to Excel</a></li>
+                                         </ul>
+                                      </div>
+                                   </div>
+                                    
+                                    <table cellpadding="0" cellspacing="0" border="0" class="table table-striped table-bordered example_table" id="">
+                                        <thead>
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>ID</th>
+                                                <th>Email</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php
+                                            static $odd_even = 0;
+                                            $he_is_admin = 0;
+                                            $reg_info = array();
+                                            $new_query = "SELECT * FROM Event_reg WHERE event_id='".$event_info_pre['event_id']."' COLLATE utf8_bin ORDER BY userID";
+                                            $new_result = mysqli_query($dbc,$new_query);
+                                            //echo $new_query;
+                                            echo mysqli_error($dbc);
+                                            if ($new_result) {
+                                              while($reg_info = $new_result->fetch_array())
+                                              { ?>
+
+                                                    <tr class="<?php if($odd_even==0) {echo "odd gradeX";}else{echo "even gradeC";}?>">
+                                                        <td class="center"><?php echo $reg_info['name'];?></td>
+                                                        <td class="center"><?php echo $reg_info['userID'];?></td>
+                                                        <td class="center"><a href="mailto:<?php echo $reg_info['email'];?>"><?php echo $reg_info['email'];?></a></td>
+                                                    </tr>
+                                                    <?php
+                                                }
+                                            }?>
+                                            
+                                        </tbody>
+                                    </table>
+
                                 </div>
                             </div>
                         </div>
@@ -393,7 +469,7 @@ if (isset($_GET['action'])) {
                 } ?>
 
                 <?php
-                    $query = "SELECT DISTINCT org_name FROM Events WHERE EXISTS (SELECT * FROM Member WHERE belong_org=Events.org_name AND stuID='".$_SESSION["user_id"]."' COLLATE utf8_bin) ORDER BY org_name";
+                    $query = "SELECT DISTINCT belong_org FROM Member WHERE stuID='".$_SESSION["user_id"]."' COLLATE utf8_bin ORDER BY belong_org";
                     $result = mysqli_query($dbc,$query);
                     echo mysqli_error($dbc);
                         if ($result) {
@@ -408,10 +484,10 @@ if (isset($_GET['action'])) {
                             </div>
                             <div class="block-content collapse in">
                                 <div class="span12">
-                                   <legend><?php echo $row_org['org_name']; ?></legend>
+                                   <legend><?php echo $row_org['belong_org']; ?></legend>
                                    <div class="table-toolbar">
                                       <div class="btn-group">
-                                        <a href="<?php echo $_SERVER["PHP_SELF"]."?action=add_event&org=".$row_org['org_name'];?>">
+                                        <a href="<?php echo $_SERVER["PHP_SELF"]."?action=add_event&org=".$row_org['belong_org'];?>">
                                             <button type="submit" name="submit" class="btn btn-success">Add Event<i class="icon-plus icon-white"></i></button>
                                         </a>
                                       </div>
@@ -441,7 +517,7 @@ if (isset($_GET['action'])) {
                                             static $odd_even = 0;
                                             $he_is_admin = 0;
                                             $event_info = array();
-                                            $new_query = "SELECT * FROM Events WHERE org_name='".$row_org['org_name']."' COLLATE utf8_bin ORDER BY time";
+                                            $new_query = "SELECT * FROM Events WHERE org_name='".$row_org['belong_org']."' COLLATE utf8_bin ORDER BY time";
                                             $new_result = mysqli_query($dbc,$new_query);
                                             if ($new_result) {
                                               while($event_info = $new_result->fetch_array())
